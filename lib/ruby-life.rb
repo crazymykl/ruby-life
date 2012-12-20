@@ -1,8 +1,8 @@
 #! /bin/env ruby
 
-require './board'
+require 'ruby-life/board'
 
-if __FILE__ == $0
+def run_tty
   h, w = begin
     require 'terminfo'
     TermInfo.screen_size
@@ -13,5 +13,9 @@ if __FILE__ == $0
   b = Board.new(w, h-2)
   b.randomize
   b.run
-
 end
+
+if __FILE__ == $0
+  run_tty
+end
+

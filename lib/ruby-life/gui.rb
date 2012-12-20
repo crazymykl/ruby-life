@@ -1,6 +1,6 @@
 #! /bin/env ruby
 
-require './board'
+require 'ruby_life/board'
 require 'gosu'
 SIZE = 4
 
