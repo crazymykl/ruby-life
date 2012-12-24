@@ -7,16 +7,16 @@ class Board
     @survivors = survivors
     @births = births
     @generation = 0
-    @board = Array.new(height) { Array.new(width, false) }
+    @board = Array.new(width*height, false)
     @urnning = false
   end
 
   def [] x, y
-    @board[@height-y-1][x]
+    @board[@height*y+x]
   end
 
   def []= x, y, value
-    @board[@height-y-1][x] = value
+    @board[@height*y+x] = value
   end
 
   def live_neighbors x, y
@@ -45,7 +45,7 @@ class Board
   end
 
   def evolve
-    @new_board = Array.new(@height) { Array.new(@width) }
+    @new_board = Array.new(@width*@height)
     @width.times do |x|
       @height.times do |y|
         evolve_point x, y
@@ -81,7 +81,7 @@ class Board
   private
   def evolve_point x, y
     aliveness = self[x,y] ? @survivors : @births
-    @new_board[@height-y-1][x] = aliveness.include? live_neighbors(x, y)
+    @new_board[@height*y+x] = aliveness.include? live_neighbors(x, y)
   end
 
   def in_bounds? x, y
