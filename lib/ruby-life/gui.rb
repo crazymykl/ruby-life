@@ -5,6 +5,7 @@ require 'gosu'
 SIZE = 4
 
 class LifeWindow < Gosu::Window
+  attr_accessor :board
 
   def initialize width=200, height=150
     @board = Board.new width, height

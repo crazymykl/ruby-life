@@ -1,3 +1,5 @@
+require 'inline'
+
 class Board
   attr_reader :generation, :width, :height, :births, :survivors, :running
 
@@ -39,29 +41,75 @@ class Board
   end
 
   def to_s live='*', dead='.'
-    board = @board.map do |line|
+    board = @board.each_slice(@width).map do |line|
       line.map { |cell| cell ? live : dead }.join
     end.unshift(characteristics).join "\n"
   end
 
-  def evolve
-    @new_board = Array.new(@width*@height)
-    @width.times do |x|
-      @height.times do |y|
-        evolve_point x, y
-      end
+  begin
+    require 'inline'
+    inline do |builder|
+      builder.prefix "#define BOUNDS(x) ((x > 0 && x < len) ? RTEST(src_brd[x]) : 0)"
+      builder.prefix "#define RBOOL(cond) ((cond) ? Qtrue : Qfalse)"
+      builder.prefix "#define ALIVENESS(x) ((RTEST(src_brd[x])) ? live : born)"
+      builder.add_link_flags "-lruby19"
+      builder.c_raw %q{
+        static VALUE evolve(int argc, VALUE *argv, VALUE self) {
+          long int w = FIX2INT(rb_ivar_get(self, rb_intern("@width")));
+          VALUE brd = rb_ivar_get(self, rb_intern("@board"));
+          VALUE births = rb_ivar_get(self, rb_intern("@births"));
+          VALUE survivors = rb_ivar_get(self, rb_intern("@survivors"));
+          VALUE *src_brd = RARRAY_PTR(brd);
+          VALUE *b_ptr = RARRAY_PTR(births), *s_ptr = RARRAY_PTR(survivors);
+          int i, len = RARRAY_LEN(brd), b_len = RARRAY_LEN(births),
+            s_len = RARRAY_LEN(survivors);
+          VALUE dst_brd = rb_ary_new2(len);
+          unsigned int born = 0, live = 0;
+
+          for(i=0; i<b_len; ++i)
+            born |= 1 << FIX2INT(b_ptr[i]);
+
+          born &= 0xff;
+
+          for(i=0; i<s_len; ++i)
+            live |= 1 << FIX2INT(s_ptr[i]);
+
+          live &= 0xff;
+
+          for(i=0; i<len; ++i) {
+            int neighbors = BOUNDS(i-w) + BOUNDS(i+w);
+
+            if(i % w)
+              neighbors += BOUNDS(i-w-1) + BOUNDS(i+w-1) + BOUNDS(i-1);
+
+            if((i+1) % w)
+              neighbors += BOUNDS(i+w+1) + BOUNDS(i-w+1) + BOUNDS(i+1);
+
+            rb_ary_push(dst_brd, RBOOL(ALIVENESS(i) & (1 << neighbors)));
+          }
+          rb_ivar_set(self, rb_intern("@board"), dst_brd);
+          return self;
+        }
+      }, method_name: 'evolve'
     end
-    @board, @new_board = @new_board, nil
-    @generation += 1
-    self
+  rescue LoadError => e
+    p "Falling back to legacy implementation: #{e}"
+    def evolve
+      next_board = Array.new(@width*@height)
+      @width.times do |x|
+        @height.times do |y|
+          aliveness = self[x,y] ? @survivors : @births
+          next_board[@height*y+x] = aliveness.include? live_neighbors(x, y)
+        end
+      end
+      @board = next_board
+      @generation += 1
+      self
+    end
   end
 
   def randomize p=0.5
-    @width.times do |x|
-      @height.times do |y|
-        self[x,y]= rand <= p
-      end
-    end
+    @board = @board.map { rand <= p }
     self
   end
 
@@ -76,12 +124,6 @@ class Board
         @running = false
       end
     end
-  end
-
-  private
-  def evolve_point x, y
-    aliveness = self[x,y] ? @survivors : @births
-    @new_board[@height*y+x] = aliveness.include? live_neighbors(x, y)
   end
 
   def in_bounds? x, y
