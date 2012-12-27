@@ -7,7 +7,7 @@ SIZE = 4
 class LifeWindow < Gosu::Window
   attr_accessor :board
 
-  def initialize width=30, height=200
+  def initialize width=300, height=200
     @board = Board.new width, height
     super(width*SIZE, height*SIZE, false)
   end
