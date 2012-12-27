@@ -1,7 +1,7 @@
 require 'inline'
 
 class Board
-  attr_reader :generation, :width, :height, :births, :survivors, :running
+  attr_reader :cells, :generation, :width, :height, :births, :survivors, :running
 
   def initialize width, height, births=[3], survivors=[2,3]
     @width = width
@@ -9,16 +9,16 @@ class Board
     @survivors = survivors
     @births = births
     @generation = 0
-    @board = Array.new(width*height, false)
+    @cells = Array.new(width*height, false)
     @urnning = false
   end
 
   def [] x, y
-    @board[@height*y+x]
+    @cells[@height*y+x]
   end
 
   def []= x, y, value
-    @board[@height*y+x] = value
+    @cells[@height*y+x] = value
   end
 
   def live_neighbors x, y
@@ -41,7 +41,7 @@ class Board
   end
 
   def to_s live='*', dead='.'
-    board = @board.each_slice(@width).map do |line|
+    board = @cells.each_slice(@width).map do |line|
       line.map { |cell| cell ? live : dead }.join
     end.unshift(characteristics).join "\n"
   end
@@ -56,7 +56,7 @@ class Board
       builder.c_raw %q{
         static VALUE evolve(int argc, VALUE *argv, VALUE self) {
           long int w = FIX2INT(rb_ivar_get(self, rb_intern("@width")));
-          VALUE brd = rb_ivar_get(self, rb_intern("@board"));
+          VALUE brd = rb_ivar_get(self, rb_intern("@cells"));
           VALUE births = rb_ivar_get(self, rb_intern("@births"));
           VALUE survivors = rb_ivar_get(self, rb_intern("@survivors"));
           VALUE *src_brd = RARRAY_PTR(brd);
@@ -87,7 +87,7 @@ class Board
 
             rb_ary_push(dst_brd, RBOOL(ALIVENESS(i) & (1 << neighbors)));
           }
-          rb_ivar_set(self, rb_intern("@board"), dst_brd);
+          rb_ivar_set(self, rb_intern("@cells"), dst_brd);
           return self;
         }
       }, method_name: 'evolve'
@@ -102,14 +102,14 @@ class Board
           next_board[@height*y+x] = aliveness.include? live_neighbors(x, y)
         end
       end
-      @board = next_board
+      @cells = next_board
       @generation += 1
       self
     end
   end
 
   def randomize p=0.5
-    @board = @board.map { rand <= p }
+    @cells = @cells.map { rand <= p }
     self
   end
 
