@@ -7,7 +7,7 @@ SIZE = 4
 class LifeWindow < Gosu::Window
   attr_accessor :board
 
-  def initialize width=200, height=150
+  def initialize width=30, height=200
     @board = Board.new width, height
     super(width*SIZE, height*SIZE, false)
   end
@@ -22,10 +22,8 @@ class LifeWindow < Gosu::Window
   end
 
   def draw
-    @board.width.times do |x|
-      @board.height.times do |y|
-        draw_square x,y if @board[x,y]
-      end
+    @board.cells.each_with_index do |val, i|
+      draw_square i % @board.width, i / @board.width if val
     end
   end
 
