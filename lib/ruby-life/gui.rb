@@ -14,11 +14,23 @@ module RubyLife
     def show
       self.caption = @board.characteristics
       @board.randomize
+      @board.running = true
       super
     end
 
+    def button_down btn_id
+      case button_id_to_char btn_id
+      when 'r'
+        @board.randomize
+      when ' '
+        @board.running = !@board.running
+      when 's'
+        @board.evolve
+      end
+    end
+
     def update
-      @board.evolve
+      @board.evolve if @board.running
     end
 
     def draw

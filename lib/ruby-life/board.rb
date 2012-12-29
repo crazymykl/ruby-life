@@ -1,6 +1,7 @@
 module RubyLife
   class Board
-    attr_reader :cells, :generation, :width, :height, :births, :survivors, :running
+    attr_reader :cells, :generation, :width, :height, :births, :survivors
+    attr_accessor :running
 
     def initialize width, height, births=[3], survivors=[2,3]
       @width = width
