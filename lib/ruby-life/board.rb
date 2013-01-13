@@ -14,17 +14,17 @@ module RubyLife
     end
 
     def [] x, y
-      @cells[@height*y+x]
+      cells[width*y+x]
     end
 
     def []= x, y, value
-      @cells[@height*y+x] = value
+      cells[width*y+x]= value
     end
 
     def live_neighbors x, y
       neighbors = [[x-1, y-1], [x, y-1], [x+1, y-1],
-                  [x-1, y  ],           [x+1, y  ],
-                  [x-1, y+1], [x, y+1], [x+1, y+1]]
+                   [x-1, y  ],           [x+1, y  ],
+                   [x-1, y+1], [x, y+1], [x+1, y+1]]
       neighbors.map { |p| point_live? *p }.count true
     end
 
@@ -37,11 +37,11 @@ module RubyLife
     end
 
     def characteristics
-      "#{@width}x#{@height} B#{@births.join}/S#{@survivors.join}"
+      "#{width}x#{height} B#{births.join}/S#{survivors.join}"
     end
 
     def to_s live='*', dead='.'
-      board = @cells.each_slice(@width).map do |line|
+      board = cells.each_slice(width).map do |line|
         line.map { |cell| cell ? live : dead }.join
       end.unshift(characteristics).join "\n"
     end
@@ -97,39 +97,39 @@ module RubyLife
     rescue LoadError => e
       p "Falling back to legacy implementation: #{e}"
       def evolve
-        next_board = Array.new(@width*@height)
-        @width.times do |x|
-          @height.times do |y|
-            aliveness = self[x,y] ? @survivors : @births
-            next_board[@height*y+x] = aliveness.include? live_neighbors(x, y)
+        next_board = Array.new(width*height)
+        width.times do |x|
+          height.times do |y|
+            aliveness = self[x,y] ? survivors : births
+            next_board[width*y+x] = aliveness.include? live_neighbors(x, y)
           end
         end
-        @cells = next_board
-        @generation += 1
+        cells = next_board
+        generation += 1
         self
       end
     end
 
     def randomize p=0.5
-      @cells = @cells.map { rand <= p }
+      cells.map! { rand <= p }
       self
     end
 
     def run steps=Float::INFINITY, delay=1/60.0
-      @running = true
-      while @running
+      running = true
+      while running
         begin
-          @running = (steps -= 1) > 0
+          running = (steps -= 1) > 0
           puts "\e[H\e[2J#{evolve}"
           sleep delay
         rescue Interrupt
-          @running = false
+          running = false
         end
       end
     end
 
     def in_bounds? x, y
-      (0...@height) === y and (0...@width) === x
+      (0...height) === y and (0...width) === x
     end
   end
 end

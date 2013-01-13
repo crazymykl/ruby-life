@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'ruby-life'
-  s.version     = '0.2.1'
-  s.date        = '2012-12-20'
+  s.version     = '0.3.0'
+  s.date        = '2013-01-12'
   s.summary     = "An implementation of Conway's Game of Life"
   s.description = "A toybox implementation of Conway's Game of Life."
   s.authors     = ["Mike MacDonald"]

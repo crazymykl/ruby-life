@@ -1,5 +1,6 @@
 #! /bin/env ruby
 require 'ruby-life/board'
+
 module RubyLife
   def self.run_tty
     h, w = begin
