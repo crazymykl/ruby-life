@@ -27,7 +27,7 @@ module RubyLife
       when 's'
         board.evolve
       when 'c'
-        board.initialize board.width, board.height
+        @board = Board.new width, height
       end
       if btn_id == Gosu::MsLeft
         x = (mouse_x/SCALE_FACTOR).floor.to_i

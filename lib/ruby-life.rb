@@ -19,9 +19,15 @@ module RubyLife
     require 'ruby-life/gui'
     LifeWindow.new.show
   end
+
+  def run
+    run_gui
+  rescue LoadError
+    run_tty
+  end
 end
 
 if __FILE__ == $0
-  run_tty
+  RubyLife.run_tty
 end
 

@@ -1,6 +1,6 @@
 module RubyLife
   class Board
-    attr_reader :cells, :generation, :width, :height, :births, :survivors
+    attr_reader :cells, :width, :height, :births, :survivors, :generation
     attr_accessor :running
 
     def initialize width, height, births=[3], survivors=[2,3]
@@ -41,9 +41,9 @@ module RubyLife
     end
 
     def to_s live='*', dead='.'
-      board = cells.each_slice(width).map do |line|
+      cells.each_slice(width).map { |line|
         line.map { |cell| cell ? live : dead }.join
-      end.unshift(characteristics).join "\n"
+      }.unshift(characteristics).join "\n"
     end
 
     begin
@@ -104,8 +104,8 @@ module RubyLife
             next_board[width*y+x] = aliveness.include? live_neighbors(x, y)
           end
         end
-        cells = next_board
-        generation += 1
+        @cells = next_board
+        @generation += 1
         self
       end
     end
